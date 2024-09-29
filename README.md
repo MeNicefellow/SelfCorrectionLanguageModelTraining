@@ -1,6 +1,6 @@
 # Self-Correction Language Model Training
 
-This project implements the SCoRe (Self-Correction via Reinforcement Learning) method for training language models to improve their self-correction abilities over multiple attempts. The training regime is based on the paper **"Training Language Models to Self-Correct via Reinforcement Learning"**.
+This project is a Pytorch and Transformers implementation of the SCoRe (Self-Correction via Reinforcement Learning) method for training language models to improve their self-correction abilities over multiple attempts. The training regime is based on the paper **["Training Language Models to Self-Correct via Reinforcement Learning"](https://arxiv.org/abs/2409.12917)**.
 
 ## Table of Contents
 
