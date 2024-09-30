@@ -86,8 +86,8 @@ def is_correct(model_to_use, problem, solution, attempt, generation_file):
 # Updated reward shaping to align with SCoRe paper
 def compute_reward(problem, solution, y1, y2, generation_file, current_stage):
     # Rewards for each attempt
-    r1 = 1.0 if is_correct(base_model, problem, solution, y1, generation_file) else 0.0
-    r2 = 1.0 if is_correct(base_model, problem, solution, y2, generation_file) else 0.0
+    r1 = 1.0 if is_correct(base_model, problem, solution, y1, generation_file) else -1.0
+    r2 = 1.0 if is_correct(base_model, problem, solution, y2, generation_file) else -1.0
 
     # Reward shaping bonus
     bonus = 0.0
@@ -163,11 +163,11 @@ evaluation_interval = 20  # Evaluate every 50 steps
 optimizer = Adam(model.parameters(), lr=learning_rate)
 
 # Evaluate the base model on the test split before training
-accuracy_file.write("Evaluating the base model on the test split for the attempts...\n")
-base_model_accuracy, base_model_accuracy2 = evaluate_both_attempts(base_model, dataset['test'], generation_file)
-accuracy_file.write(f"First Attempt Base Model Test Accuracy: {base_model_accuracy * 100:.2f}%\n")
-accuracy_file.write(f"Second Attempt Base Model Test Accuracy: {base_model_accuracy2 * 100:.2f}%\n\n")
-accuracy_file.flush()
+#accuracy_file.write("Evaluating the base model on the test split for the attempts...\n")
+#base_model_accuracy, base_model_accuracy2 = evaluate_both_attempts(base_model, dataset['test'], generation_file)
+#accuracy_file.write(f"First Attempt Base Model Test Accuracy: {base_model_accuracy * 100:.2f}%\n")
+#accuracy_file.write(f"Second Attempt Base Model Test Accuracy: {base_model_accuracy2 * 100:.2f}%\n\n")
+#accuracy_file.flush()
 
 # Function to compute log probabilities of generated tokens
 def compute_log_probabilities(outputs, labels):
