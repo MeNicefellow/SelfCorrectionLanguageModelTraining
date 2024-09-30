@@ -24,7 +24,7 @@ class SpecialTokenStoppingCriteria(StoppingCriteria):
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description='Train Language Models to Self-Correct via Reinforcement Learning')
-parser.add_argument('--model_name', type=str, default='unsloth/Llama-3.2-3B-Instruct', help='Name of the model to train')
+parser.add_argument('--model_name', type=str, default='Qwen/Qwen2.5-Math-1.5B-Instruct', help='Name of the model to train')
 parser.add_argument('--dataset_name', type=str, default='lighteval/MATH', help='Name of the dataset to use')
 parser.add_argument('--question_column', type=str, default='problem', help='Column name for the questions in the dataset')
 parser.add_argument('--answer_column', type=str, default='solution', help='Column name for the gold standard answers in the dataset')
@@ -86,8 +86,8 @@ def is_correct(model_to_use, problem, solution, attempt, generation_file):
 # Updated reward shaping to align with SCoRe paper
 def compute_reward(problem, solution, y1, y2, generation_file, current_stage):
     # Rewards for each attempt
-    r1 = 1.0 if is_correct(model, problem, solution, y1, generation_file) else 0.0
-    r2 = 1.0 if is_correct(model, problem, solution, y2, generation_file) else 0.0
+    r1 = 1.0 if is_correct(base_model, problem, solution, y1, generation_file) else 0.0
+    r2 = 1.0 if is_correct(base_model, problem, solution, y2, generation_file) else 0.0
 
     # Reward shaping bonus
     bonus = 0.0
@@ -157,7 +157,7 @@ beta1 = 0.1  # KL divergence regularization coefficient for the first attempt in
 beta2 = 0.05  # KL divergence regularization coefficient for the second attempt in Stage II
 num_epochs = 1  # Adjust as needed
 learning_rate = 1e-5
-evaluation_interval = 50  # Evaluate every 50 steps
+evaluation_interval = 20  # Evaluate every 50 steps
 
 # Set up the optimizer
 optimizer = Adam(model.parameters(), lr=learning_rate)
@@ -186,7 +186,7 @@ def compute_log_probabilities(outputs, labels):
     selected_log_probs = shift_log_probs[torch.arange(shift_labels.size(0)), shift_labels]
 
     # Sum the log probabilities
-    log_prob = selected_log_probs.sum()
+    log_prob = selected_log_probs.mean()
     return log_prob
 
 # Training Loop
@@ -268,7 +268,7 @@ for epoch in range(num_epochs):
         global_step += 1
 
         # Switch stages every 50 steps
-        if global_step % 50 == 0:
+        if global_step % evaluation_interval == 0:
             current_stage = 2 if current_stage == 1 else 1
 
             # Evaluate every 'evaluation_interval' steps
