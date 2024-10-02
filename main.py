@@ -24,7 +24,7 @@ class SpecialTokenStoppingCriteria(StoppingCriteria):
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description='Train Language Models to Self-Correct via Reinforcement Learning')
-parser.add_argument('--model_name', type=str, default='Qwen/Qwen2.5-Math-1.5B-Instruct', help='Name of the model to train')
+parser.add_argument('--model_name', type=str, default='Qwen/Qwen2.5-1.5B-Instruct', help='Name of the model to train')
 parser.add_argument('--dataset_name', type=str, default='lighteval/MATH', help='Name of the dataset to use')
 parser.add_argument('--question_column', type=str, default='problem', help='Column name for the questions in the dataset')
 parser.add_argument('--answer_column', type=str, default='solution', help='Column name for the gold standard answers in the dataset')
