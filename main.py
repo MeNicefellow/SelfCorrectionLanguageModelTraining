@@ -157,7 +157,10 @@ beta1 = 0.1  # KL divergence regularization coefficient for the first attempt in
 beta2 = 0.05  # KL divergence regularization coefficient for the second attempt in Stage II
 num_epochs = 1  # Adjust as needed
 learning_rate = 1e-5
-evaluation_interval = 20  # Evaluate every 50 steps
+evaluation_interval = 2  # Evaluate every 2 steps (since steps now represent batch updates)
+
+# Set batch_size for gradient accumulation
+batch_size = 16
 
 # Set up the optimizer
 optimizer = Adam(model.parameters(), lr=learning_rate)
@@ -192,10 +195,13 @@ def compute_log_probabilities(outputs, labels):
 # Training Loop
 global_step = 0
 current_stage = 1  # Start with Stage I
+accumulation_steps = 0  # Counter for gradient accumulation
+
 for epoch in range(num_epochs):
     accuracy_file.write(f"Epoch {epoch + 1}/{num_epochs}\n")
     model.train()
-    for batch in tqdm(dataset['train']):
+    total_loss = 0.0  # Accumulate losses
+    for i, batch in enumerate(tqdm(dataset['train'])):
         problem = batch[args.question_column]
         solution = batch[args.answer_column]
 
@@ -260,23 +266,35 @@ for epoch in range(num_epochs):
             # Stage II: Optimize both attempts with reward shaping
             loss = - (r1 * log_prob_y1 + r2 * log_prob_y2 + bonus * (log_prob_y2 - log_prob_y1)) + beta1 * kl_div_y1 + beta2 * kl_div_y2
 
+        # Normalize loss by batch_size for gradient accumulation
+        loss = loss / batch_size
+        total_loss += loss.item()  # Accumulate loss for logging
+
         # Backpropagation
-        optimizer.zero_grad()
         loss.backward()
-        optimizer.step()
+        accumulation_steps += 1
 
-        global_step += 1
+        # Update parameters and zero gradients every batch_size samples
+        if accumulation_steps % batch_size == 0:
+            optimizer.step()
+            optimizer.zero_grad()
+            global_step += 1
 
-        # Switch stages every 50 steps
-        if global_step % evaluation_interval == 0:
-            current_stage = 2 if current_stage == 1 else 1
+            # Switch stages every 'evaluation_interval' steps
+            if global_step % evaluation_interval == 0:
+                current_stage = 2 if current_stage == 1 else 1
 
-            # Evaluate every 'evaluation_interval' steps
-            accuracy_file.write(f"\nEvaluating at step {global_step}...\n")
-            model_accuracy, model_accuracy2 = evaluate_both_attempts(model, dataset['test'], generation_file)
-            accuracy_file.write(f"First Attempt Model Test Accuracy: {model_accuracy * 100:.2f}%\n")
-            accuracy_file.write(f"Second Attempt Model Test Accuracy: {model_accuracy2 * 100:.2f}%\n\n")
-            accuracy_file.flush()
+                # Evaluate every 'evaluation_interval' steps
+                accuracy_file.write(f"\nEvaluating at global step {global_step}...\n")
+                model_accuracy, model_accuracy2 = evaluate_both_attempts(model, dataset['test'], generation_file)
+                accuracy_file.write(f"First Attempt Model Test Accuracy: {model_accuracy * 100:.2f}%\n")
+                accuracy_file.write(f"Second Attempt Model Test Accuracy: {model_accuracy2 * 100:.2f}%\n\n")
+                accuracy_file.flush()
+
+            # Optionally, you can log the average loss here
+            avg_loss = total_loss / batch_size
+            print(f"Global Step {global_step}, Average Loss: {avg_loss}")
+            total_loss = 0.0  # Reset total loss after each batch
 
     # Save the model after each epoch
     model.save_pretrained(f"finetuned_model_epoch_{epoch + 1}")
