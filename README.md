@@ -38,7 +38,7 @@ python main.py [--arguments]
 
 ## Arguments
 
-- `--model_name`: Name of the model to train (default: `'unsloth/Llama-3.2-3B-Instruct'`).
+- `--model_name`: Name of the model to train (default: `'Qwen/Qwen2.5-1.5B-Instruct'`).
 - `--dataset_name`: Name of the dataset to use (default: `'lighteval/MATH'`).
 - `--question_column`: Column name for the questions in the dataset (default: `'problem'`).
 - `--answer_column`: Column name for the gold standard answers in the dataset (default: `'solution'`).
@@ -46,7 +46,7 @@ python main.py [--arguments]
 Example:
 
 ```bash
-python main.py --model_name 'unsloth/Llama-3.2-3B-Instruct' --dataset_name 'lighteval/MATH' --question_column 'problem' --answer_column 'solution'
+python main.py --model_name 'Qwen/Qwen2.5-1.5B-Instruct' --dataset_name 'lighteval/MATH' --question_column 'problem' --answer_column 'solution'
 ```
 
 ## Output Files
@@ -54,6 +54,18 @@ python main.py --model_name 'unsloth/Llama-3.2-3B-Instruct' --dataset_name 'ligh
 - `accuracies.txt`: Contains the accuracies of the first and second attempts during training and evaluation.
 - `generations.txt`: Contains the prompts and generations (first and second attempts) during training and evaluation.
 
+## Experiment Results
+
+We evaluated the implemented training pipeline on Qwen/Qwen2.5-1.5B-Instruct. During the training, the model was evaluated at different global steps. The following plot visualizes the model's first and second attempt accuracies over the course of training.
+
+![Model Test Accuracy at Different Global Steps](result.png)
+
+The dotted horizontal lines represent the base model's original accuracies:
+
+- Base First Attempt Accuracy: **71%**
+- Base Second Attempt Accuracy: **75%**
+
+As shown in the graph, the second attempt accuracy significantly improves at most stages during the training process, reaching as high as **88%** at certain points. However, the results exhibit some instability, with both first and second attempt accuracies fluctuating over different steps. This variability could be attributed to the small scale of the experiment, constrained by limited computational resources. In the original paper (Figure 5 a), we can also see the accuracies of both attempts improve in twists and turns.
 
 
 ## License

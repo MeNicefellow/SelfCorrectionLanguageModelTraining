@@ -86,8 +86,8 @@ def is_correct(model_to_use, problem, solution, attempt, generation_file):
 # Updated reward shaping to align with SCoRe paper
 def compute_reward(problem, solution, y1, y2, generation_file, current_stage):
     # Rewards for each attempt
-    r1 = 1.0 if is_correct(base_model, problem, solution, y1, generation_file) else -1.0
-    r2 = 1.0 if is_correct(base_model, problem, solution, y2, generation_file) else -1.0
+    r1 = 1.0 if is_correct(base_model, problem, solution, y1, generation_file) else 0
+    r2 = 1.0 if is_correct(base_model, problem, solution, y2, generation_file) else 0
 
     # Reward shaping bonus
     bonus = 0.0
